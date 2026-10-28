@@ -1,0 +1,733 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Northstep Shoes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400..700&display=swap">
+<style>
+/* Layout concept: a full-bleed colorway stage with a giant outlined model name behind a floating shoe,
+   then a pinned "camera" tour of the shoe's four layers, a horizontally scrolling line-up, and a fit tool. */
+:root{
+  --bg:#EDEFF4; --bg2:#E1E5EE; --card:#F8F9FC; --fg:#0D1120; --muted:#505870; --line:rgba(13,17,32,.14);
+  --accent:#2F3CF2; --on-accent:#FFFFFF; --accent-text:#2B38E0;
+  --nav-bg:rgba(248,249,252,.8);
+  --stage:#0E1330; --on-stage:#EEF0FA; --stage-muted:#9BA3C4; --stage-line:rgba(238,240,250,.18);
+  --f-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --f-body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'DM Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  /* hero colorway (default: Cobalt Dusk) */
+  --h-bg:#2F3CF2; --h-ink:#F2F3FF;
+  --shoe:#F1EFE9; --shoe2:#D3D6F5; --accent2:#FF5A36; --sole:#FFFFFF; --lace:#2A2F7A; --out:#121638;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A0D18; --bg2:#10142A; --card:#121730; --fg:#EEF0F8; --muted:#9AA2BC; --line:rgba(238,240,248,.16);
+    --accent:#4A57FF; --on-accent:#FFFFFF; --accent-text:#A3AAFF; --nav-bg:rgba(18,23,48,.78);
+    --stage:#080B1A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A0D18; --bg2:#10142A; --card:#121730; --fg:#EEF0F8; --muted:#9AA2BC; --line:rgba(238,240,248,.16);
+  --accent:#4A57FF; --on-accent:#FFFFFF; --accent-text:#A3AAFF; --nav-bg:rgba(18,23,48,.78);
+  --stage:#080B1A; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.5 var(--f-body);-webkit-font-smoothing:antialiased;overflow-x:clip}
+a{color:inherit}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent-text);outline-offset:3px}
+.hero :focus-visible{outline-color:var(--h-ink)}
+.anat :focus-visible,.foot :focus-visible{outline-color:var(--on-stage)}
+.wrap{max-width:1280px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.muted{color:var(--muted)}
+.h2{font-family:var(--f-display);font-weight:800;font-stretch:115%;font-size:clamp(34px,6vw,84px);line-height:.95;letter-spacing:-.02em;text-transform:uppercase;text-wrap:balance;margin:12px 0 0}
+
+/* shoe parts take their colors from the nearest colorway variables */
+.shoe{display:block;width:100%;height:auto;overflow:visible}
+.s-upper,.s-tongue{fill:var(--shoe)}
+.s-accent{fill:var(--accent2)}
+.s-stripe{stroke:var(--accent2)}
+.s-eye,.s-toe{fill:var(--shoe2)}
+.s-collar{stroke:var(--shoe2)}
+.s-lace{stroke:var(--lace)}
+.s-mid{fill:var(--sole)}
+.s-groove{fill:rgba(0,0,0,.11)}
+.s-plate{stroke:var(--accent2)}
+.s-out{fill:var(--out)}
+.shoe [data-part]{transition:none}
+
+/* progress + cursor + toast */
+.progress{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:3px;z-index:70;pointer-events:none}
+.progress i{display:block;height:100%;background:var(--accent);transform-origin:left;transform:scaleX(0)}
+.cursor{position:fixed;left:0;top:0;width:34px;height:34px;border:1.5px solid #fff;border-radius:50%;pointer-events:none;z-index:200;mix-blend-mode:difference;display:none;transition:width .25s,height .25s,background-color .25s}
+.cursor.hot{width:64px;height:64px;background:#fff}
+html.has-cursor .cursor{display:block}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translate(-50%,24px);opacity:0;pointer-events:none;z-index:120;background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:500;font-size:14px;transition:transform .35s,opacity .35s;max-width:calc(100vw - 32px);text-align:center}
+.toast.on{transform:translate(-50%,0);opacity:1}
+
+/* nav */
+.nav{position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 12px);left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));max-width:1100px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 6px 6px 18px;border-radius:999px;background:var(--nav-bg);color:var(--fg);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;font:800 16px var(--f-display);font-stretch:125%;letter-spacing:.06em}
+.logo svg{width:20px;height:20px;fill:var(--accent-text)}
+.nav nav{display:flex;gap:28px}
+.nav nav a{text-decoration:none;font-weight:500;font-size:15px}
+.nav nav a:hover{color:var(--accent-text)}
+.bag{display:inline-flex;align-items:center;gap:10px;min-height:44px;border:0;border-radius:999px;background:var(--fg);color:var(--bg);padding:8px 10px 8px 18px;font-weight:600;font-size:14px;cursor:pointer}
+.bag b{display:grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:13px;background:var(--accent);color:var(--on-accent);font:500 12px var(--f-mono)}
+@media(max-width:560px){.nav nav{display:none}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 24px;border-radius:999px;border:0;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-hero{background:var(--h-ink);color:var(--h-bg)}
+.btn-line{background:transparent;color:inherit;border:1.5px solid currentColor}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:var(--h-bg);color:var(--h-ink);padding-top:104px;padding-bottom:48px;isolation:isolate;transition:color .4s}
+.wipe{position:absolute;inset:0;z-index:0;display:none;pointer-events:none}
+.hero .wrap{position:relative;z-index:1}
+.hero-top{display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;font:500 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase}
+.stage{position:relative;width:min(960px,100%);margin:12px auto 0;aspect-ratio:2/1.05;container-type:inline-size}
+.giant{position:absolute;left:0;right:0;top:-2%;height:80%;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:900;font-stretch:125%;font-size:clamp(120px,41cqw,420px);line-height:.8;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:2px var(--h-ink);white-space:nowrap;pointer-events:none;user-select:none}
+.gl{display:inline-block;overflow:hidden;padding:.06em .02em}
+.gl i{display:inline-block;font-style:normal}
+.badge{position:absolute;right:0;top:4%;width:clamp(84px,14cqw,128px);height:auto;animation:spin 26s linear infinite;fill:var(--h-ink);z-index:2}
+.badge text{font:500 10px var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+@keyframes spin{to{transform:rotate(360deg)}}
+.intro{position:absolute;left:0;right:0;bottom:0}
+.hero-bottom{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:32px;margin-top:20px;align-items:start}
+.hero h1{font-family:var(--f-display);font-weight:800;font-stretch:108%;font-size:clamp(28px,3.3vw,44px);line-height:1.02;letter-spacing:-.01em;margin:0 0 12px;text-wrap:balance}
+.lede{margin:0 0 20px;max-width:46ch;opacity:.9}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.sel{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 6px 0 16px;border:1.5px solid var(--h-ink);border-radius:999px}
+.sel select{appearance:none;-webkit-appearance:none;background:transparent;border:0;min-height:44px;padding:0 14px 0 4px;font:500 15px var(--f-body);color:inherit;cursor:pointer}
+.sel select option{color:#0D1120;background:#fff}
+.label{margin:0 0 14px}
+.swatches{display:flex;gap:12px;flex-wrap:wrap}
+.sw{width:44px;height:44px;border-radius:50%;border:2px solid var(--h-ink);padding:0;cursor:pointer;transition:transform .25s}
+.sw:hover{transform:scale(1.08)}
+.sw[aria-checked="true"]{box-shadow:0 0 0 3px var(--h-bg),0 0 0 5px var(--h-ink)}
+.specs{margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px 20px;font-size:15px}
+.specs dt{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;opacity:.75;padding-top:3px}
+.specs dd{margin:0;font-weight:600}
+@media(max-width:900px){.hero-bottom{grid-template-columns:1fr;gap:28px}.hero{padding-top:96px}}
+
+/* marquee */
+.marquee{overflow:hidden;background:var(--fg);color:var(--bg);padding:20px 0;white-space:nowrap}
+.marquee-track{display:inline-flex;will-change:transform}
+.mq{display:inline-flex;align-items:center;gap:36px;padding-right:36px;font:800 clamp(20px,3vw,34px)/1 var(--f-display);font-stretch:125%;text-transform:uppercase}
+.mq i{display:inline-block;width:.7em;height:.7em;background:var(--accent);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+
+/* anatomy */
+.anat{background:var(--stage);color:var(--on-stage);padding-top:88px;padding-bottom:28px;position:relative;overflow:hidden}
+.anat-head{display:flex;justify-content:space-between;align-items:end;gap:16px 32px;flex-wrap:wrap}
+.anat .h2{font-size:clamp(28px,4.4vw,56px)}
+.eyebrow{margin:0;color:var(--stage-muted)}
+.parts{display:flex;gap:18px;list-style:none;margin:0;padding:0;color:var(--on-stage)}
+.parts li{opacity:.4}
+.anat-bar{height:2px;background:var(--stage-line);margin:16px 0 0}
+.anat-bar i{display:block;height:100%;background:var(--accent-text);transform-origin:left;transform:scaleX(0)}
+.anat-stage{position:relative;height:clamp(220px,40svh,440px);overflow:hidden;margin-top:8px}
+.anat-shoe{position:absolute;inset:0;margin:auto;width:min(740px,100%);aspect-ratio:2/1;height:auto;will-change:transform}
+.caps{position:relative;height:200px;margin-top:16px}
+.cap{position:absolute;left:0;top:0;max-width:600px;opacity:0}
+.cap:first-child{opacity:1}
+.cap h3{font:800 clamp(22px,2.6vw,32px)/1.05 var(--f-display);font-stretch:108%;margin:8px 0 10px;text-wrap:balance}
+.cap p{margin:0}
+.cap p.mono{color:var(--stage-muted);margin:0}
+.cap p:not(.mono){color:var(--on-stage);opacity:.88;font-size:16px}
+.anat.static .caps{height:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.anat.static .cap{position:static;opacity:1}
+.anat.static .parts li{opacity:1}
+@media(max-width:700px){.caps{height:236px}.cap p:not(.mono){font-size:15px}.anat-stage{height:clamp(200px,34svh,440px)}.anat{padding-top:80px}.parts{gap:12px}}
+
+/* lineup */
+.lineup .pin{min-height:100svh;display:flex;flex-direction:column;justify-content:center;gap:32px;padding-block:104px 56px}
+.lineup-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;width:100%}
+.lineup-head p{margin:0}
+.rail-wrap{overflow:hidden}
+.rail{display:flex;gap:24px;width:max-content;padding-left:max(16px,calc((100vw - 1280px)/2 + 16px),env(safe-area-inset-left,0px));padding-right:max(16px,calc((100vw - 1280px)/2 + 16px),env(safe-area-inset-right,0px))}
+@media(max-width:899px){.lineup .pin{min-height:0;padding-block:88px 56px}.rail-wrap{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:12px}.card{scroll-snap-align:center}.rail{scroll-padding-left:16px}}
+.card{flex:0 0 clamp(290px,30vw,420px);background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+@media(max-width:899px){.card{flex-basis:min(82vw,380px)}}
+.card-media{position:relative;aspect-ratio:5/4;display:grid;place-items:center;background:var(--p-bg);padding:0 6%;overflow:hidden}
+.card-media .shoe{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.card:hover .card-media .shoe{transform:rotate(-7deg) scale(1.07) translateY(-4px)}
+.tag{position:absolute;left:14px;top:14px;background:rgba(10,13,24,.62);color:#fff;padding:5px 10px;border-radius:999px}
+.card-body{padding:18px 20px 22px;display:flex;flex-direction:column;gap:12px}
+.card-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.card-head h3{margin:0;font:800 22px/1.05 var(--f-display);font-stretch:108%;text-transform:uppercase}
+.price{margin:0;font-size:14px;letter-spacing:.04em;text-transform:none}
+.card-note{margin:0;color:var(--muted);font-size:15px}
+.sizes{display:flex;gap:8px;flex-wrap:wrap}
+.sizes button{min-width:44px;min-height:44px;border-radius:50%;border:1.5px solid var(--line);background:transparent;cursor:pointer;font:500 14px var(--f-mono)}
+.sizes button[aria-checked="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.card .btn{width:100%}
+
+/* stats */
+.stats{padding-block:104px 72px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:48px;border-top:1.5px solid var(--fg)}
+.stat{padding:24px 20px 8px 0}
+.stat+.stat{padding-left:20px;border-left:1px solid var(--line)}
+.stat b{display:block;font:900 clamp(44px,6.4vw,92px)/.95 var(--f-display);font-stretch:125%;letter-spacing:-.03em}
+.stat b small{font-size:.38em;letter-spacing:0;font-stretch:100%;font-weight:700;margin-left:4px}
+.stat span{display:block;margin-top:10px;color:var(--muted);font-size:15px;max-width:26ch}
+@media(max-width:800px){.stat-grid{grid-template-columns:1fr 1fr}.stat:nth-child(3){padding-left:0;border-left:0}.stat:nth-child(n+3){border-top:1px solid var(--line);margin-top:16px}}
+
+/* fit */
+.fit{padding-block:40px 112px}
+.fit-box{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;background:var(--bg2);border-radius:6px;padding:clamp(24px,5vw,64px)}
+.fit-box p{margin:16px 0 0;color:var(--muted);max-width:44ch}
+.fit-tool label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.fit-tool label output{font:800 28px var(--f-display);font-stretch:115%}
+.fit-tool input[type=range]{width:100%;height:44px;accent-color:var(--accent);cursor:pointer}
+.fit-out{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+.fit-out div{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
+.fit-out b{display:block;font:900 clamp(32px,4vw,52px)/1 var(--f-display);font-stretch:120%;margin-top:6px}
+.fit-note{font-size:14px;margin-top:16px!important}
+@media(max-width:800px){.fit-box{grid-template-columns:1fr;gap:32px}}
+
+/* footer */
+.foot{background:var(--stage);color:var(--on-stage);padding-top:88px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 28px);overflow:hidden}
+.foot-top{display:grid;grid-template-columns:1.2fr 1fr;gap:48px}
+.foot h2{font:800 clamp(30px,4.4vw,60px)/.98 var(--f-display);font-stretch:115%;text-transform:uppercase;letter-spacing:-.02em;margin:0 0 20px;text-wrap:balance}
+.news{display:flex;gap:10px;flex-wrap:wrap}
+.news input{flex:1 1 220px;min-height:48px;border-radius:999px;border:1.5px solid var(--stage-line);background:transparent;padding:0 20px;color:var(--on-stage)}
+.news input::placeholder{color:var(--stage-muted)}
+.news-msg{min-height:24px;margin:10px 0 0;color:var(--stage-muted);font-size:14px}
+.foot-links{display:flex;gap:48px;flex-wrap:wrap}
+.foot-links ul{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.foot-links a{text-decoration:none}
+.foot-links a:hover{text-decoration:underline}
+.foot-word{display:flex;justify-content:center;font:900 clamp(48px,15.4vw,230px)/.9 var(--f-display);font-stretch:125%;letter-spacing:-.03em;margin-top:64px;overflow:hidden;white-space:nowrap;padding-bottom:.06em}
+.foot-word span{display:inline-block}
+.foot-fine{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px;color:var(--stage-muted);font-size:14px}
+@media(max-width:800px){.foot-top{grid-template-columns:1fr}}
+
+/* bag drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,7,16,.55);opacity:0;pointer-events:none;transition:opacity .35s;z-index:80}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;right:0;width:min(440px,100vw);z-index:90;background:var(--card);color:var(--fg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px);border-left:1px solid var(--line)}
+.drawer.open{transform:none}
+.drawer header{display:flex;justify-content:space-between;align-items:center;padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+.drawer h2{margin:0;font:800 22px var(--f-display);font-stretch:115%;text-transform:uppercase}
+.x{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:transparent;cursor:pointer;font-size:20px;line-height:1}
+.lines{list-style:none;margin:0;padding:0 20px;flex:1;overflow-y:auto}
+.line{display:grid;grid-template-columns:96px 1fr auto;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);align-items:center}
+.thumb{border-radius:6px;aspect-ratio:1;display:grid;place-items:center;padding:0 6px}
+.line-name{margin:0 0 2px;font-weight:600}
+.line-info .mono{margin:0}
+.qty{display:inline-flex;align-items:center;gap:4px;margin-top:8px;border:1px solid var(--line);border-radius:999px}
+.qty button{width:36px;height:36px;border:0;background:transparent;cursor:pointer;font-size:18px}
+.qty span{min-width:20px;text-align:center;font-family:var(--f-mono)}
+.line-side{text-align:right}
+.line-side p{margin:0 0 8px}
+.rm{border:0;background:transparent;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px;min-height:32px}
+.empty{padding:40px 0;color:var(--muted);display:grid;gap:16px;justify-items:start}
+.drawer footer{padding:18px 20px 20px;border-top:1px solid var(--line);display:grid;gap:12px}
+.total{display:flex;justify-content:space-between;align-items:baseline}
+.total strong{font:800 26px var(--f-display);font-stretch:115%}
+.drawer footer p{margin:0;font-size:13px;color:var(--muted)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="mesh" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="1.1" fill="rgba(0,0,0,.15)"/><circle cx="5.3" cy="5.3" r="1.1" fill="rgba(0,0,0,.15)"/></pattern>
+    <linearGradient id="g-ushade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
+    <linearGradient id="g-mshade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+    <radialGradient id="g-shadow"><stop offset="0" stop-color="#000" stop-opacity=".4"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs>
+</svg>
+
+<div class="progress" aria-hidden="true"><i></i></div>
+<div class="cursor" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="#top" aria-label="Northstep, back to top">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1L14.6 9.4 23 12 14.6 14.6 12 23 9.4 14.6 1 12 9.4 9.4Z"/></svg>
+    <span>NORTHSTEP</span>
+  </a>
+  <nav aria-label="Primary">
+    <a href="#lineup">Shop</a>
+    <a href="#anatomy">Anatomy</a>
+    <a href="#fit">Fit</a>
+  </nav>
+  <button class="bag" id="bag-btn" type="button" aria-label="Open bag, 0 items"><span>Bag</span><b id="bag-count">0</b></button>
+</header>
+
+<main>
+<section class="hero" id="top">
+  <div class="wipe" id="wipe"></div>
+  <div class="wrap">
+    <div class="hero-top"><span>New season / Road</span><span>30-day trial. Free returns.</span></div>
+    <div class="stage" id="stage">
+      <div class="giant" aria-hidden="true"><span class="gl"><i>A</i></span><span class="gl"><i>R</i></span><span class="gl"><i>C</i></span></div>
+      <svg class="badge" viewBox="0 0 120 120" aria-hidden="true">
+        <defs><path id="circ" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs>
+        <text><textPath href="#circ" textLength="272" lengthAdjust="spacing">FREE RETURNS • 30-DAY TRIAL •</textPath></text>
+      </svg>
+      <div class="intro"><div class="scrollfx"><div class="tilt"><div class="float">
+        <svg class="shoe" data-shoe viewBox="0 0 800 400" role="img" aria-label="Arc 01 running shoe, side view"></svg>
+      </div></div></div></div>
+    </div>
+    <div class="hero-bottom">
+      <div class="hb-a">
+        <h1>A road shoe that gives back what you put in.</h1>
+        <p class="lede">Arc 01 weighs 218 g, stacks 36 mm of foam under the heel, and keeps a spring plate where your toes push off.</p>
+        <div class="cta">
+          <label class="sel"><span class="mono">US size</span>
+            <select id="hero-size" aria-label="US size">
+              <option>7</option><option>8</option><option selected>9</option><option>10</option><option>11</option><option>12</option>
+            </select>
+          </label>
+          <button class="btn btn-hero" id="hero-add" type="button" data-magnetic>Add to bag, $168</button>
+        </div>
+      </div>
+      <div class="hb-b">
+        <p class="mono label">Colorway: <span id="cw-name">Cobalt Dusk</span></p>
+        <div class="swatches" id="swatches" role="radiogroup" aria-label="Colorway"></div>
+      </div>
+      <dl class="specs">
+        <dt>Weight</dt><dd>218 g (US 9)</dd>
+        <dt>Stack</dt><dd>36 / 30 mm</dd>
+        <dt>Drop</dt><dd>6 mm</dd>
+        <dt>Plate</dt><dd>Nylon, tuned</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <div class="mq"><span>30-day trial</span><i></i><span>Free returns</span><i></i><span>Made in small batches</span><i></i><span>Resoleable outsoles</span><i></i><span>Ships in 2 days</span><i></i></div>
+  </div>
+</div>
+
+<section class="anat" id="anatomy">
+  <div class="wrap">
+    <div class="anat-head">
+      <div><p class="mono eyebrow">Anatomy of the Arc 01</p><h2 class="h2">Four layers. 218 grams.</h2></div>
+      <ul class="parts mono" aria-hidden="true"><li>Upper</li><li>Midsole</li><li>Plate</li><li>Outsole</li></ul>
+    </div>
+    <div class="anat-bar" aria-hidden="true"><i></i></div>
+    <div class="anat-stage">
+      <div class="anat-shoe" id="anat-shoe"><svg class="shoe" data-shoe viewBox="0 0 800 400" role="img" aria-label="Side view of the Arc 01 with each layer shown in turn"></svg></div>
+    </div>
+    <div class="caps">
+      <div class="cap"><p class="mono">Layer 1 of 4 &middot; 74 g</p><h3>Upper: one piece of engineered mesh</h3><p>Knit in a single pass, so there are no seams across the toes to rub. A denser weave through the midfoot holds the laces, and an open weave over the forefoot lets heat out.</p></div>
+      <div class="cap"><p class="mono">Layer 2 of 4 &middot; 96 g</p><h3>Midsole: foam that gives back</h3><p>36 mm of stack at the heel and 30 mm at the forefoot. The foam returns most of the energy you put into it, and the wide base keeps every landing steady.</p></div>
+      <div class="cap"><p class="mono">Layer 3 of 4 &middot; 12 g</p><h3>Plate: a spring, not a blade</h3><p>A thin nylon plate set to flex under the ball of your foot, so toe-off feels like a push instead of a stiff board.</p></div>
+      <div class="cap"><p class="mono">Layer 4 of 4 &middot; 36 g</p><h3>Outsole: rubber only where you land</h3><p>Hard rubber at the heel and under the ball of the foot. The rest is left bare to save weight, and it can be resoled when the rubber wears through.</p></div>
+      <div class="cap cap-final"><p class="mono">All four together</p><h3>74 + 96 + 12 + 36 = 218 g</h3><p>That is the whole shoe, in a US men's 9.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="lineup" id="lineup">
+  <div class="pin">
+    <div class="wrap lineup-head">
+      <div><p class="mono muted" style="margin:0">Spring line-up</p><h2 class="h2">Pick your pair</h2></div>
+      <p class="mono muted">6 pairs &middot; US sizes 7 to 12</p>
+    </div>
+    <div class="rail-wrap"><div class="rail" id="rail"></div></div>
+  </div>
+</section>
+
+<section class="stats" aria-label="Arc 01 by the numbers">
+  <div class="wrap">
+    <p class="mono muted" style="margin:0">Arc 01, measured</p>
+    <h2 class="h2">Built to be weighed</h2>
+    <div class="stat-grid">
+      <div class="stat"><b><span data-count="218">218</span><small>g</small></b><span>Whole shoe, US men's 9</span></div>
+      <div class="stat"><b>36<small>/ 30 mm</small></b><span>Foam stack, heel and forefoot</span></div>
+      <div class="stat"><b><span data-count="6">6</span><small>mm</small></b><span>Drop from heel to toe</span></div>
+      <div class="stat"><b><span data-count="1200">1200</span><small>km</small></b><span>Run on a lab treadmill before release</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="fit" id="fit">
+  <div class="wrap">
+    <div class="fit-box">
+      <div>
+        <p class="mono muted" style="margin:0">Fit finder</p>
+        <h2 class="h2">Find your size</h2>
+        <p>Stand with your heel against a wall and measure to your longest toe, ideally at the end of the day when your feet are largest.</p>
+      </div>
+      <div class="fit-tool">
+        <label for="fit-range"><span class="mono">Foot length</span><output id="fit-val" for="fit-range">26.5 cm</output></label>
+        <input id="fit-range" type="range" min="22" max="31" step="0.1" value="26.5">
+        <div class="fit-out" aria-live="polite">
+          <div><span class="mono muted">EU</span><b id="o-eu">42</b></div>
+          <div><span class="mono muted">US</span><b id="o-us">9</b></div>
+          <div><span class="mono muted">UK</span><b id="o-uk">8</b></div>
+        </div>
+        <p class="fit-note muted" id="fit-note">Men's sizing. For women's US sizes, add 1.5.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div>
+        <h2>First look at every drop</h2>
+        <form class="news" id="news" novalidate>
+          <input id="news-email" type="email" placeholder="you@example.com" aria-label="Email address" required autocomplete="email">
+          <button class="btn" type="submit" data-magnetic>Join the list</button>
+        </form>
+        <p class="news-msg" id="news-msg" role="status"></p>
+      </div>
+      <div class="foot-links">
+        <div><p class="mono" style="margin:0;color:var(--stage-muted)">Shop</p><ul><li><a href="#lineup">Line-up</a></li><li><a href="#anatomy">Anatomy</a></li><li><a href="#fit">Fit finder</a></li></ul></div>
+        <div><p class="mono" style="margin:0;color:var(--stage-muted)">Store</p><ul><li><a href="#top">Back to top</a></li><li><a href="#bag" id="foot-bag">Open bag</a></li></ul></div>
+      </div>
+    </div>
+    <div class="foot-word" id="foot-word" aria-hidden="true"></div>
+    <div class="foot-fine"><span>&copy; 2026 Northstep Footwear Co.</span><span>Demo storefront. Products and prices are placeholders.</span></div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Shopping bag" inert>
+  <header><h2>Your bag</h2><button class="x" id="drawer-close" type="button" aria-label="Close bag">&times;</button></header>
+  <ul class="lines" id="cart-list"></ul>
+  <footer>
+    <div class="total"><span class="mono">Subtotal</span><strong id="cart-total">$0</strong></div>
+    <button class="btn" type="button" id="checkout" disabled>Checkout</button>
+    <p>Demo store: checkout is not connected, so nothing is charged.</p>
+  </footer>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+'use strict';
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var hasGSAP = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+var motion = hasGSAP && !reduce;
+if (hasGSAP) gsap.registerPlugin(ScrollTrigger);
+
+/* ---------- shoe artwork (original design) ---------- */
+var SHOE =
+'<ellipse cx="415" cy="368" rx="365" ry="22" fill="url(#g-shadow)"/>' +
+'<g data-part="outsole"><path class="s-out" d="M92 346 L640 346 C700 346 748 333 772 304 L774 312 C752 342 700 360 640 360 L118 360 C100 360 88 354 80 345 Z"/></g>' +
+'<g data-part="midsole">' +
+  '<path class="s-mid" d="M60 280 L60 312 C60 336 86 348 122 348 L640 348 C700 348 750 334 775 300 C785 285 770 274 750 272 L100 272 C75 272 60 274 60 280 Z"/>' +
+  '<path fill="url(#g-mshade)" d="M60 280 L60 312 C60 336 86 348 122 348 L640 348 C700 348 750 334 775 300 C785 285 770 274 750 272 L100 272 C75 272 60 274 60 280 Z"/>' +
+  '<rect class="s-groove" x="140" y="320" width="92" height="11" rx="5.5"/><rect class="s-groove" x="250" y="320" width="92" height="11" rx="5.5"/><rect class="s-groove" x="360" y="320" width="92" height="11" rx="5.5"/><rect class="s-groove" x="470" y="320" width="92" height="11" rx="5.5"/><rect class="s-groove" x="580" y="318" width="80" height="11" rx="5.5"/>' +
+'</g>' +
+'<g data-part="plate"><path class="s-plate" d="M96 302 C250 295 430 303 580 295 C660 290 722 282 760 292" fill="none" stroke-width="7" stroke-linecap="round"/></g>' +
+'<g data-part="upper">' +
+  '<path class="s-tongue" d="M236 98 C256 60 300 48 332 68 C348 80 352 102 342 120 C312 104 268 112 236 98 Z"/>' +
+  '<path class="s-upper" d="M72 272 C66 220 70 160 92 125 C105 105 135 100 160 108 C200 120 230 100 262 88 C300 78 330 100 360 125 C410 165 470 190 540 205 C620 222 700 232 745 258 C760 268 765 272 752 274 L100 274 Z"/>' +
+  '<path fill="url(#mesh)" d="M72 272 C66 220 70 160 92 125 C105 105 135 100 160 108 C200 120 230 100 262 88 C300 78 330 100 360 125 C410 165 470 190 540 205 C620 222 700 232 745 258 C760 268 765 272 752 274 L100 274 Z"/>' +
+  '<path class="s-accent" d="M72 272 C66 222 70 176 92 140 C116 150 150 176 160 216 C168 246 152 262 142 274 Z"/>' +
+  '<path class="s-stripe" d="M168 252 C262 252 330 214 432 238 C482 250 520 246 566 234" fill="none" stroke-width="13" stroke-linecap="round"/>' +
+  '<path class="s-eye" d="M262 92 C300 82 330 104 360 128 C410 168 470 192 540 208 L534 232 C460 218 396 192 340 150 C310 126 284 112 254 120 Z"/>' +
+  '<path class="s-toe" d="M545 205 C620 222 700 232 745 258 C760 268 765 272 752 274 L520 274 C530 250 535 228 545 205 Z"/>' +
+  '<path class="s-collar" d="M92 125 C105 105 135 100 160 108" fill="none" stroke-width="16" stroke-linecap="round"/>' +
+  '<g class="s-lace" fill="none" stroke-width="8" stroke-linecap="round"><path d="M285 100 L296 128"/><path d="M325 111 L342 139"/><path d="M365 133 L386 159"/><path d="M410 156 L432 179"/><path d="M460 176 L480 199"/></g>' +
+  '<path fill="url(#g-ushade)" d="M72 272 C66 220 70 160 92 125 C105 105 135 100 160 108 C200 120 230 100 262 88 C300 78 330 100 360 125 C410 165 470 190 540 205 C620 222 700 232 745 258 C760 268 765 272 752 274 L100 274 Z"/>' +
+'</g>';
+function shoeSvg(cls){ return '<svg class="shoe ' + (cls||'') + '" viewBox="0 0 800 400" aria-hidden="true">' + SHOE + '</svg>'; }
+Array.prototype.forEach.call(document.querySelectorAll('svg[data-shoe]'), function(s){ s.innerHTML = SHOE; });
+
+/* ---------- data ---------- */
+var CW = [
+  {key:'cobalt',name:'Cobalt Dusk',bg:'#2F3CF2',ink:'#F2F3FF',shoe:'#F1EFE9',shoe2:'#D3D6F5',accent2:'#FF5A36',sole:'#FFFFFF',lace:'#2A2F7A',out:'#121638'},
+  {key:'salt',name:'Salt Flat',bg:'#CBD7E4',ink:'#0E1526',shoe:'#1C2438',shoe2:'#3A4560',accent2:'#FF7A59',sole:'#F7F8FA',lace:'#E7EBF3',out:'#0E1526'},
+  {key:'moss',name:'Moss Signal',bg:'#1D3A2C',ink:'#EAF3D2',shoe:'#E4F0BD',shoe2:'#BFD97A',accent2:'#F2B01E',sole:'#F4F7E6',lace:'#1D3A2C',out:'#13271D'},
+  {key:'rose',name:'Rose Quartz',bg:'#F0B4C6',ink:'#2B1530',shoe:'#2B1530',shoe2:'#5A3560',accent2:'#FFF4F7',sole:'#FFF4F7',lace:'#F0B4C6',out:'#1A0C1E'}
+];
+var DUNE   = {bg:'#EFC862',shoe:'#FFF6DC',shoe2:'#F0DDA6',accent2:'#E8472B',sole:'#FFFFFF',lace:'#E8472B',out:'#3A2A12'};
+var HARBOR = {bg:'#9EC9C2',shoe:'#FFFFFF',shoe2:'#DCE9E6',accent2:'#1F4E5F',sole:'#F2F6F5',lace:'#1F4E5F',out:'#1F4E5F'};
+var EMBER  = {bg:'#F28A5C',shoe:'#231815',shoe2:'#4B332C',accent2:'#FFE2C6',sole:'#FFE2C6',lace:'#FFE2C6',out:'#231815'};
+var PRODUCTS = [
+  {key:'arc-road',  name:'Arc 01 Road',  type:'Road',     price:168, note:'218 g, 6 mm drop, made for daily miles', pal:CW[0]},
+  {key:'arc-night', name:'Arc 01 Night', type:'Road',     price:168, note:'Same 218 g, dark upper that hides the grime', pal:CW[1]},
+  {key:'arc-trail', name:'Arc Trail',    type:'Trail',    price:182, note:'Lugged outsole, 236 g, grips wet roots', pal:CW[2]},
+  {key:'dune-low',  name:'Dune Low',     type:'Everyday', price:139, note:'Low profile, 9 mm drop, goes with everything', pal:DUNE},
+  {key:'harbor',    name:'Harbor Court', type:'Court',    price:128, note:'Flat sole and a wide forefoot for side-to-side', pal:HARBOR},
+  {key:'ember',     name:'Ember Slip',   type:'Slip-on',  price:119, note:'No laces, elastic collar, on in two seconds', pal:EMBER}
+];
+function vars(p){ return '--shoe:'+p.shoe+';--shoe2:'+p.shoe2+';--accent2:'+p.accent2+';--sole:'+p.sole+';--lace:'+p.lace+';--out:'+p.out+';'; }
+function money(n){ return '$' + n.toLocaleString('en-US'); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* ---------- line-up cards ---------- */
+var rail = document.getElementById('rail');
+rail.innerHTML = PRODUCTS.map(function(p){
+  var sizes = [7,8,9,10,11].map(function(s){
+    return '<button type="button" role="radio" aria-checked="' + (s===9) + '" data-size="' + s + '" aria-label="US size ' + s + '">' + s + '</button>';
+  }).join('');
+  return '<article class="card" data-key="' + p.key + '">' +
+    '<div class="card-media" style="--p-bg:' + p.pal.bg + ';' + vars(p.pal) + '">' + shoeSvg() + '<span class="tag mono">' + esc(p.type) + '</span></div>' +
+    '<div class="card-body">' +
+      '<div class="card-head"><h3>' + esc(p.name) + '</h3><p class="price mono">' + money(p.price) + '</p></div>' +
+      '<p class="card-note">' + esc(p.note) + '</p>' +
+      '<div class="sizes" role="radiogroup" aria-label="Size for ' + esc(p.name) + '">' + sizes + '</div>' +
+      '<button type="button" class="btn" data-add data-magnetic>Add to bag</button>' +
+    '</div></article>';
+}).join('');
+rail.addEventListener('click', function(e){
+  var s = e.target.closest('[data-size]');
+  if (s) {
+    Array.prototype.forEach.call(s.parentElement.querySelectorAll('[data-size]'), function(b){ b.setAttribute('aria-checked', String(b === s)); });
+    return;
+  }
+  var a = e.target.closest('[data-add]');
+  if (a) {
+    var card = a.closest('.card');
+    var p = PRODUCTS.filter(function(x){ return x.key === card.dataset.key; })[0];
+    var size = card.querySelector('[aria-checked="true"]').dataset.size;
+    addToCart(p, size);
+  }
+});
+
+/* ---------- bag ---------- */
+var cart = [];
+var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+var bagBtn = document.getElementById('bag-btn'), bagCount = document.getElementById('bag-count');
+var listEl = document.getElementById('cart-list'), totalEl = document.getElementById('cart-total');
+var toastEl = document.getElementById('toast'), toastTimer;
+
+function toast(msg){
+  toastEl.textContent = msg; toastEl.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, 2300);
+}
+function addToCart(item, size){
+  var f = cart.filter(function(c){ return c.key === item.key && c.size === String(size); })[0];
+  if (f) f.qty++; else cart.push({key:item.key, name:item.name, price:item.price, pal:item.pal, size:String(size), qty:1});
+  renderCart();
+  toast(item.name + ', US ' + size + ' added to your bag');
+  if (motion) gsap.fromTo(bagCount, {scale:1.6}, {scale:1, duration:.6, ease:'elastic.out(1,.5)'});
+}
+function renderCart(){
+  var n = 0, total = 0;
+  cart.forEach(function(c){ n += c.qty; total += c.qty * c.price; });
+  bagCount.textContent = n;
+  bagBtn.setAttribute('aria-label', 'Open bag, ' + n + ' item' + (n === 1 ? '' : 's'));
+  totalEl.textContent = money(total);
+  document.getElementById('checkout').disabled = true;
+  if (!cart.length) {
+    listEl.innerHTML = '<li class="empty"><p style="margin:0">Your bag is empty. The Arc 01 is a good place to start.</p><button type="button" class="btn btn-line" data-close>Keep browsing</button></li>';
+    return;
+  }
+  listEl.innerHTML = cart.map(function(c, i){
+    return '<li class="line" style="' + vars(c.pal) + '">' +
+      '<div class="thumb" style="background:' + c.pal.bg + '">' + shoeSvg() + '</div>' +
+      '<div class="line-info"><p class="line-name">' + esc(c.name) + '</p><p class="mono muted">US ' + c.size + '</p>' +
+        '<div class="qty"><button type="button" data-dec="' + i + '" aria-label="Fewer ' + esc(c.name) + '">&minus;</button><span>' + c.qty + '</span><button type="button" data-inc="' + i + '" aria-label="More ' + esc(c.name) + '">+</button></div></div>' +
+      '<div class="line-side"><p class="mono" style="text-transform:none">' + money(c.price * c.qty) + '</p><button type="button" class="rm" data-rm="' + i + '">Remove</button></div></li>';
+  }).join('');
+}
+listEl.addEventListener('click', function(e){
+  var t = e.target.closest('button'); if (!t) return;
+  if (t.hasAttribute('data-close')) { openDrawer(false); return; }
+  var i;
+  if (t.dataset.inc != null) { i = +t.dataset.inc; cart[i].qty++; }
+  else if (t.dataset.dec != null) { i = +t.dataset.dec; cart[i].qty--; if (cart[i].qty < 1) cart.splice(i, 1); }
+  else if (t.dataset.rm != null) { cart.splice(+t.dataset.rm, 1); }
+  renderCart();
+});
+function openDrawer(o){
+  drawer.classList.toggle('open', o); drawer.inert = !o; scrim.classList.toggle('on', o);
+  (o ? document.getElementById('drawer-close') : bagBtn).focus({preventScroll:true});
+}
+bagBtn.addEventListener('click', function(){ openDrawer(true); });
+document.getElementById('drawer-close').addEventListener('click', function(){ openDrawer(false); });
+document.getElementById('foot-bag').addEventListener('click', function(e){ e.preventDefault(); openDrawer(true); });
+scrim.addEventListener('click', function(){ openDrawer(false); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && drawer.classList.contains('open')) openDrawer(false); });
+renderCart();
+
+/* ---------- hero colorway ---------- */
+var hero = document.getElementById('top'), wipe = document.getElementById('wipe');
+var cur = 0;
+var sw = document.getElementById('swatches');
+sw.innerHTML = CW.map(function(c, i){
+  return '<button type="button" class="sw" role="radio" aria-checked="' + (i===0) + '" aria-label="' + c.name + '" data-i="' + i + '" style="background:linear-gradient(135deg,' + c.bg + ' 50%,' + c.shoe + ' 50%)"></button>';
+}).join('');
+function applyShoe(cw){
+  hero.style.setProperty('--h-ink', cw.ink);
+  ['shoe','shoe2','accent2','sole','lace','out'].forEach(function(k){ hero.style.setProperty('--' + k, cw[k]); });
+  document.getElementById('cw-name').textContent = cw.name;
+}
+function setColorway(i, ev){
+  if (i === cur) return;
+  cur = i;
+  var cw = CW[i];
+  Array.prototype.forEach.call(sw.children, function(b, j){ b.setAttribute('aria-checked', String(j === i)); });
+  if (!motion) { hero.style.setProperty('--h-bg', cw.bg); applyShoe(cw); return; }
+  var r = hero.getBoundingClientRect();
+  var x = (ev && ev.clientX != null ? ev.clientX : r.left + r.width / 2) - r.left;
+  var y = (ev && ev.clientY != null ? ev.clientY : r.top + r.height / 2) - r.top;
+  wipe.style.background = cw.bg;
+  gsap.killTweensOf(wipe);
+  gsap.set(wipe, {display:'block', clipPath:'circle(0px at ' + x + 'px ' + y + 'px)'});
+  gsap.to(wipe, {clipPath:'circle(' + Math.hypot(r.width, r.height) + 'px at ' + x + 'px ' + y + 'px)', duration:.85, ease:'power3.inOut',
+    onComplete:function(){ hero.style.setProperty('--h-bg', cw.bg); gsap.set(wipe, {display:'none'}); }});
+  gsap.delayedCall(.3, function(){ applyShoe(cw); });
+  gsap.fromTo('.intro', {rotation:-7, scale:.93}, {rotation:0, scale:1, duration:1.1, ease:'elastic.out(1,.55)', delay:.25});
+}
+sw.addEventListener('click', function(e){ var b = e.target.closest('.sw'); if (b) setColorway(+b.dataset.i, e); });
+document.getElementById('hero-add').addEventListener('click', function(){
+  var cw = CW[cur];
+  addToCart({key:'arc-' + cw.key, name:'Arc 01 ' + cw.name, price:168, pal:cw}, document.getElementById('hero-size').value);
+});
+
+/* ---------- fit finder ---------- */
+var range = document.getElementById('fit-range');
+function fmt(n){ return n % 1 ? n.toFixed(1) : String(n); }
+function fit(){
+  var L = +range.value;
+  var eu = Math.round((L + 1.5) * 1.5 * 2) / 2;
+  var us = Math.round((eu - 33) * 2) / 2;
+  var uk = us - 1;
+  document.getElementById('fit-val').textContent = L.toFixed(1) + ' cm';
+  document.getElementById('o-eu').textContent = fmt(eu);
+  document.getElementById('o-us').textContent = fmt(us);
+  document.getElementById('o-uk').textContent = fmt(uk);
+  document.getElementById('fit-note').textContent = (us < 7 || us > 12)
+    ? "Men's sizing. This is outside our US 7 to 12 range, so write to us before ordering."
+    : "Men's sizing. For women's US sizes, add 1.5.";
+  if (motion) gsap.fromTo('.fit-out b', {y:8}, {y:0, duration:.35, ease:'power2.out', stagger:.04, overwrite:true});
+}
+range.addEventListener('input', fit); fit();
+
+/* ---------- newsletter (demo, nothing is sent) ---------- */
+document.getElementById('news').addEventListener('submit', function(e){
+  e.preventDefault();
+  var inp = document.getElementById('news-email'), msg = document.getElementById('news-msg');
+  if (!inp.value || inp.value.indexOf('@') < 1) { msg.textContent = 'Enter an email address like you@example.com.'; inp.focus(); return; }
+  msg.textContent = 'Thanks. This is a demo store, so nothing was sent.';
+  inp.value = '';
+});
+
+/* ---------- footer wordmark ---------- */
+var fw = document.getElementById('foot-word');
+fw.innerHTML = 'NORTHSTEP'.split('').map(function(ch){ return '<span>' + ch + '</span>'; }).join('');
+
+/* ---------- motion ---------- */
+var anat = document.getElementById('anatomy');
+if (!motion) { anat.classList.add('static'); return; }
+
+/* cursor + magnetic buttons */
+if (window.matchMedia('(pointer: fine)').matches) {
+  document.documentElement.classList.add('has-cursor');
+  var cur2 = document.querySelector('.cursor');
+  gsap.set(cur2, {xPercent:-50, yPercent:-50});
+  var cx = gsap.quickTo(cur2, 'x', {duration:.35, ease:'power3'}), cy = gsap.quickTo(cur2, 'y', {duration:.35, ease:'power3'});
+  window.addEventListener('pointermove', function(e){ cx(e.clientX); cy(e.clientY); });
+  document.addEventListener('pointerover', function(e){ cur2.classList.toggle('hot', !!e.target.closest('a,button,select,input,.card')); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-magnetic]'), function(b){
+    var xt = gsap.quickTo(b, 'x', {duration:.5, ease:'power3'}), yt = gsap.quickTo(b, 'y', {duration:.5, ease:'power3'});
+    b.addEventListener('pointermove', function(e){ var r = b.getBoundingClientRect(); xt((e.clientX - r.left - r.width / 2) * .28); yt((e.clientY - r.top - r.height / 2) * .4); });
+    b.addEventListener('pointerleave', function(){ xt(0); yt(0); });
+  });
+}
+
+/* page progress */
+gsap.to('.progress i', {scaleX:1, ease:'none', scrollTrigger:{start:0, end:'max', scrub:.2}});
+
+/* hero intro */
+var intro = gsap.timeline({defaults:{ease:'power4.out'}});
+intro.from('.gl i', {yPercent:110, duration:1.1, stagger:.09})
+     .from('.intro', {xPercent:38, rotation:9, opacity:0, duration:1.4, ease:'expo.out'}, .1)
+     .from('.badge', {scale:.4, opacity:0, duration:1, ease:'back.out(1.6)'}, .6)
+     .from('.hero-top span', {y:-16, opacity:0, duration:.7, stagger:.1}, .3)
+     .from('.hero-bottom > *', {y:36, opacity:0, duration:.9, stagger:.12}, .55)
+     .from('.sw', {scale:0, duration:.6, stagger:.07, ease:'back.out(2)'}, .9);
+
+/* idle float + mouse tilt */
+gsap.to('.float', {y:-14, rotation:-1.4, duration:3.2, ease:'sine.inOut', repeat:-1, yoyo:true});
+var tilt = document.querySelector('.tilt'), giant = document.querySelector('.giant');
+var tx = gsap.quickTo(tilt, 'x', {duration:.9, ease:'power3'}), ty = gsap.quickTo(tilt, 'y', {duration:.9, ease:'power3'}), tr = gsap.quickTo(tilt, 'rotation', {duration:.9, ease:'power3'});
+var gx = gsap.quickTo(giant, 'x', {duration:1.2, ease:'power3'});
+hero.addEventListener('pointermove', function(e){
+  var r = hero.getBoundingClientRect();
+  var nx = (e.clientX - r.left) / r.width - .5, ny = (e.clientY - r.top) / r.height - .5;
+  tx(nx * 46); ty(ny * 26); tr(nx * 5); gx(-nx * 60);
+});
+hero.addEventListener('pointerleave', function(){ tx(0); ty(0); tr(0); gx(0); });
+
+/* hero scroll */
+gsap.to('.scrollfx', {scale:1.12, rotation:-4, yPercent:6, ease:'none', scrollTrigger:{trigger:hero, start:'top top', end:'bottom top', scrub:true}});
+gsap.to('.giant', {xPercent:-9, ease:'none', scrollTrigger:{trigger:hero, start:'top top', end:'bottom top', scrub:true}});
+
+/* marquee that speeds up with scroll velocity */
+var mt = document.querySelector('.marquee-track');
+mt.innerHTML += mt.innerHTML;
+var mq = gsap.to(mt, {xPercent:-50, repeat:-1, duration:34, ease:'none'});
+ScrollTrigger.create({onUpdate:function(self){
+  var v = self.getVelocity(), dir = v < 0 ? -1 : 1;
+  gsap.to(mq, {timeScale:dir * (1 + Math.min(7, Math.abs(v) / 260)), duration:.25, overwrite:true,
+    onComplete:function(){ gsap.to(mq, {timeScale:dir, duration:1.2}); }});
+}});
+
+/* anatomy: a camera that tours the four layers while the section is pinned */
+var wrapEl = document.getElementById('anat-shoe');
+var caps = Array.prototype.slice.call(anat.querySelectorAll('.cap'));
+var partLis = Array.prototype.slice.call(anat.querySelectorAll('.parts li'));
+var PARTS = ['upper','midsole','plate','outsole'];
+var STEPS = [{tx:330,ty:170,s:2.0},{tx:400,ty:312,s:2.3},{tx:420,ty:298,s:2.3},{tx:410,ty:350,s:2.5}];
+function k(){ return wrapEl.offsetWidth / 800; }
+var atl = gsap.timeline({defaults:{ease:'power2.inOut'}, scrollTrigger:{trigger:anat, start:'top top', end:'+=3800', pin:true, scrub:.8, anticipatePin:1, invalidateOnRefresh:true}});
+atl.fromTo('.anat-bar i', {scaleX:0}, {scaleX:1, duration:10, ease:'none'}, 0);
+STEPS.forEach(function(st, i){
+  var T = i * 2.4;
+  atl.to(wrapEl, {x:function(){ return -(st.tx - 400) * k() * st.s; }, y:function(){ return -(st.ty - 200) * k() * st.s; }, scale:st.s, duration:1}, T);
+  PARTS.forEach(function(p){
+    atl.to(anat.querySelectorAll('[data-part="' + p + '"]'), {opacity:p === PARTS[i] ? 1 : .14, duration:.6, ease:'none'}, T);
+  });
+  atl.fromTo(partLis[i], {opacity:.4}, {opacity:1, duration:.4, ease:'none'}, T);
+  atl.to(partLis[i], {opacity:.4, duration:.3, ease:'none'}, T + 2.05);
+  if (i > 0) atl.fromTo(caps[i], {opacity:0, y:22}, {opacity:1, y:0, duration:.5}, T + .45);
+  atl.to(caps[i], {opacity:0, y:-18, duration:.35}, T + 2.0);
+});
+var TF = 4 * 2.4;
+atl.to(wrapEl, {x:0, y:0, scale:1, duration:1.1}, TF);
+atl.to(anat.querySelectorAll('[data-part]'), {opacity:1, duration:.6, ease:'none'}, TF);
+atl.fromTo(caps[4], {opacity:0, y:22}, {opacity:1, y:0, duration:.6}, TF + .5);
+atl.to({}, {duration:.8}, TF + 1.1);
+
+/* line-up: horizontal scroll on desktop, native swipe on phones */
+var mm = gsap.matchMedia();
+mm.add('(min-width: 900px)', function(){
+  var railWrap = document.querySelector('.rail-wrap'), pin = document.querySelector('.lineup .pin');
+  function dist(){ return Math.max(0, rail.scrollWidth - railWrap.clientWidth); }
+  gsap.to(rail, {x:function(){ return -dist(); }, ease:'none', scrollTrigger:{trigger:pin, start:'top top', end:function(){ return '+=' + dist(); }, pin:true, scrub:.6, invalidateOnRefresh:true, anticipatePin:1}});
+});
+
+/* stats */
+Array.prototype.forEach.call(document.querySelectorAll('[data-count]'), function(el){
+  var end = +el.dataset.count;
+  ScrollTrigger.create({trigger:el, start:'top 88%', once:true, onEnter:function(){
+    var o = {v:0};
+    gsap.to(o, {v:end, duration:1.8, ease:'power2.out', onUpdate:function(){ el.textContent = Math.round(o.v).toLocaleString('en-US'); }});
+  }});
+});
+gsap.from('.stat', {y:48, duration:.9, ease:'power3.out', stagger:.12, scrollTrigger:{trigger:'.stat-grid', start:'top 85%'}});
+gsap.from('.fit-box', {y:56, duration:1, ease:'power3.out', scrollTrigger:{trigger:'.fit-box', start:'top 88%'}});
+gsap.from('.lineup-head > *', {y:36, duration:.9, ease:'power3.out', stagger:.1, scrollTrigger:{trigger:'.lineup-head', start:'top 90%'}});
+
+/* footer wordmark */
+gsap.from('#foot-word span', {yPercent:80, stagger:.05, ease:'none', scrollTrigger:{trigger:'.foot', start:'top 85%', end:'top 30%', scrub:true}});
+
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ ScrollTrigger.refresh(); });
+window.addEventListener('load', function(){ ScrollTrigger.refresh(); });
+})();
+</script>
+
+</body></html>
